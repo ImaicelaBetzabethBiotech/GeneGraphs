@@ -14,7 +14,7 @@ devtools::install_github("ImaicelaBetzabethBiotech/GeneGraphs")
 ```
 # Usage
 To use GeneGraphs, you will need to load the required libraries:
-
+```r
 library(RTCGA)
 library(RTCGA.mRNA)
 library(ggplot2)
@@ -26,13 +26,19 @@ library(carData)
 library(car)
 library(multcomp)
 library(reshape2)
+```
+
 Then, you can start using the functions provided by the package to construct and analyze gene networks.
+
 ```r
 > boxplot_expression(expr,"dataset","all")
 >
 ```
 ![BoxplotALL](https://user-images.githubusercontent.com/117690624/229288576-acb3c94c-9c68-4259-9bd7-f749f79eb2a8.png)
 
+You can review an [article](https://github.com/ImaicelaBetzabethBiotech/GeneGraphs/blob/main/PaperGeneExpresion.pdf) where gene expression data is visualized, and ```GeneGraphs``` is used.
+
+You can review more generalities of the package [here](https://imaicelabetzabethbiotech.github.io/GeneGraphs)
 
 # Authors
 
