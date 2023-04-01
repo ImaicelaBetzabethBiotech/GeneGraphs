@@ -1,2 +1,3 @@
+# T4 Paquete R
 # GeneGraphs
-integranstes: Michelle Imaicela, Johana Tanguila
+Integrantes: Betzabeth Imaicela & Johanna Tanguila
