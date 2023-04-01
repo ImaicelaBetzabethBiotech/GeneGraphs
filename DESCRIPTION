@@ -1,12 +1,25 @@
 Package: GeneGraphs
-Title: What the Package Does (One Line, Title Case)
+Title: Visualize and Analyze Gene Expresión Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(person("Betzabeth", "Imaicela", , "betzabeth.imaicela@est.ikiam.edu.ec", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1825-0097")),
+      person("Johanna", "Tanguila", , "johanna.tanguila@est.ikiam.edu.ec", role = c("aut"),
+           comment = c(ORCID = "0000-0001-5109-3700")))
+Description: GeneGraphs is a package that allows users to visualize and analyze gene networks. It provides tools for constructing and manipulating gene networks, as well as for performing various types of analysis on these networks.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Depends:
+    RTCGA,
+    RTCGA.mRNA,
+    ggplot2,
+    ggpubr,
+    FactoMineR,
+    factoextra,
+    dplyr,
+    carData,
+    car,
+    multcomp,
+    reshape2
