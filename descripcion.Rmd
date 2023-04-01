@@ -1,0 +1,271 @@
+---
+title: "GeneGraphs: demo package"
+author: "Betzabeth Imaicela, & Johanna Tanguila"
+date: "2023-04-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```GeneGraphs``` es un package que permite la visualización de datos de expresión génica, contiene funciones que permiten realizar analisis exploratorio y estadistico. 
+
+La base de datos utilizada en este estudio fue obtenida a través del portal de datos The Cancer Genome Atlas (TCGA) del National Cancer Institute (NCI) de los Estados Unidos. TCGA es una iniciativa colaborativa que ha generado datos de secuenciación de próxima generación y análisis de expresión génica en múltiples tipos de cáncer.
+### Liberias utilizadas
+
+```{r, results='hide', warning=FALSE, message=FALSE}
+library(RTCGA);library(RTCGA); library(RTCGA.mRNA); library(ggplot2);
+library(ggpubr); library(FactoMineR); library(factoextra); library(dplyr);
+library(ggplot2); library(carData); library(car); library(multcomp);
+library(reshape2); library(ggpubr);
+```
+
+```{r}
+expr <- expressionsTCGA(BRCA.mRNA, OV.mRNA, LUSC.mRNA,
+                        extract.cols = c("GATA3", "PTEN", "XBP1","ESR1", "MUC1"))
+nb_samples <- table(expr$dataset)
+expr$dataset <- gsub(pattern = ".mRNA", replacement = "",  expr$dataset)
+expr$bcr_patient_barcode <- paste0(expr$dataset, c(1:590, 1:561, 1:154))
+expr <- read.delim("https://raw.githubusercontent.com/kassambara/data/master/expr_tcga.txt",
+                   stringsAsFactors = FALSE)
+```
+
+Una vez cargado los datos, se llevó a cabo la normalización de los mismos , para poder comparar y analizar los datos de forma coherente y precisa. Para la normalización se utilizó el método “trimmed mean of M values” (TMM) (Robinson y Oshlack, 2010). Finalmente, se procedió a la identificación de los genes diferencialmente expresados y se realizó el análisis estadístico correspondiente.
+
+### Función 1: boxplot_expression
+
+```{r, warning=FALSE, message=FALSE}
+boxplot_expression <- function(data, x_var, y_var) {
+  library(ggpubr)
+  if (!x_var %in% colnames(data)) {
+    stop(paste("La variable especificada para el eje x (", x_var, ") no se encuentra en el conjunto de datos.", sep = ""))
+  }
+  if (y_var != "all" & !all(y_var %in% colnames(data))) {
+    stop(paste("Una o más de las variables especificadas para el eje y (", paste(y_var, collapse = ", "), ") no se encuentran en el conjunto de datos.", sep = ""))
+  }
+  if (y_var == "all") {
+    y_vars <- colnames(data)[!colnames(data) %in% c(x_var, "bcr_patient_barcode")]
+  } else {
+    y_vars <- y_var
+  }
+  ggboxplot(data, x = x_var,
+            y = y_vars,
+            merge = "flip",
+            ylab = "Expression",
+            xlab = "Dataset",
+            color = x_var) +
+    scale_fill_manual(values = c("#A9A9A9", "#808080", "#696969")) +
+    theme_grey() +
+    theme(legend.position = "top")
+}
+```
+La función `boxplot_expression` toma como argumentos un conjunto de datos (`data`), una variable para el eje x (`x_var`) y una o más variables para el eje y (`y_var`). Esta función genera un gráfico de caja para visualizar la distribución de los valores de las variables del eje y para cada valor de la variable del eje x.
+
+Si se especifica el valor `"all"` para el argumento `y_var`, la función incluirá todas las columnas del conjunto de datos que no sean la variable del eje x ni la columna `"bcr_patient_barcode"`.
+
+La función verifica si las variables especificadas para los ejes x e y se encuentran en el conjunto de datos. Si alguna de las variables no se encuentra en el conjunto de datos, la función generará un error con un mensaje apropiado.
+
+Ejemplo de uso:
+
+Generar un gráfico de caja para un solo gen
+```{r}
+boxplot_expression(expr, "dataset", "XBP1")
+```
+
+
+Generar un gráfico de caja para todos los genes disponibles en el conjunto de datos
+```{r}
+boxplot_expression(expr, "dataset", "all")
+```
+
+
+### Función 3: ```jiterplot_expression```
+
+```{r}
+jitterplot_expression <- function(data, x_var, y_vars) {
+  library(ggpubr)
+  library(reshape2)
+  if (!x_var %in% colnames(data)) {
+    stop(paste("La variable especificada para el eje x (", x_var, ") no se encuentra en el conjunto de datos.", sep = ""))
+  }
+  if (y_vars != "all" & !all(y_vars %in% colnames(data))) {
+    stop(paste("Una o más de las variables especificadas para el eje y (", paste(y_vars, collapse = ", "), ") no se encuentran en el conjunto de datos.", sep = ""))
+  }
+  if (y_vars == "all") {
+    y_vars <- colnames(data)[!colnames(data) %in% c(x_var, "bcr_patient_barcode")]
+  }
+  data_long <- reshape2::melt(data, id.vars = x_var, measure.vars = y_vars)
+  ggplot(data_long, aes_string(x = x_var, y = "value", color = x_var)) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2, size = 0.1) +
+    scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07")) +
+    labs(x = "Cohort type", y = "Expresión", color = "Cohort") +
+    theme(legend.position = "bottom") +
+    stat_compare_means(comparisons = list(c("BRCA", "OV"), c("OV", "LUSC"))) +
+    theme_grey() +
+    facet_wrap(~ variable)
+}
+```
+
+La función `jitterplot_expression` toma como argumentos un conjunto de datos (`data`), una variable para el eje x (`x_var`) y una o más variables para el eje y (`y_vars`). Esta función genera un gráfico de caja con puntos jitter para visualizar la distribución de los valores de las variables del eje y para cada valor de la variable del eje x. El gráfico incluye facetas para cada variable del eje y.
+
+Igual que la anterior función si se especifica el valor `"all"` para el argumento `y_vars`, la función incluirá todas las columnas del conjunto de datos que no sean la variable del eje x ni la columna `"bcr_patient_barcode"`.
+
+La función verifica si las variables especificadas para los ejes x e y se encuentran en el conjunto de datos. Si alguna de las variables no se encuentra en el conjunto de datos, la función generará un error con un mensaje apropiado.
+
+Ejemplo de uso:
+
+Generar un gráfico de caja con puntos jitter para un solo gen
+```{r, warning=FALSE}
+jitterplot_expression(expr, "dataset", "XBP1")
+```
+
+Generar un gráfico de caja con puntos jitter para todos los genes disponibles en el conjunto de datos
+```{r, warning=FALSE}
+jitterplot_expression(expr, "dataset", "all")
+```
+
+### Función 3: ```plotdensity_cancer```
+```{r}
+plotdensity_cancer <- function(data, dataset_col, cancer_type) {
+  library(ggplot2)
+  library(reshape2)
+  
+  if (!dataset_col %in% colnames(data)) {
+    stop(paste("La variable especificada para el conjunto de datos (", dataset_col, ") no se encuentra en el conjunto de datos.", sep = ""))
+  }
+  
+  if (cancer_type != "all" & !cancer_type %in% unique(data[[dataset_col]])) {
+    stop(paste("El tipo de cáncer especificado (", cancer_type, ") no se encuentra en el conjunto de datos.", sep = ""))
+  }
+  
+  if (cancer_type != "all") {
+    data <- subset(data, data[[dataset_col]] == cancer_type)
+  }
+  
+  # Convertir los datos a formato largo
+  expr_long <- melt(data, id.vars = dataset_col, measure.vars = c("GATA3", "PTEN", "XBP1", "MUC1", "ESR1"))
+  
+  ggplot(expr_long, aes(x = value, color = variable, fill = variable)) +
+    geom_density(alpha = 0.5) +
+    geom_rug() +
+    geom_vline(aes(xintercept = median(value)), linetype = "dashed") +
+    scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#C0C0C0", "#FFD700"))+
+    scale_fill_manual(values = c("#00AFBB", "#E7B800", "#FC4E07", "#C0C0C0", "#FFD700")) +
+    labs(x = "Expression", y = "Count", color = "Gene", fill = "Gene") +
+    theme_grey()+
+    facet_wrap(as.formula(paste("~", dataset_col)))
+}
+```
+
+
+La función `plotdensity_cancer` toma como argumentos un conjunto de datos (`data`), el nombre de la columna que contiene el tipo de cáncer (`dataset_col`) y el tipo de cáncer para el cual se desea generar el gráfico (`cancer_type`). Esta función genera un gráfico de densidad para visualizar la distribución de los valores de expresión génica para un tipo de cáncer específico o para todos los tipos de cáncer disponibles en el conjunto de datos.
+
+Si se especifica el valor `"all"` para el argumento `cancer_type`, la función incluirá todos los tipos de cáncer disponibles en el conjunto de datos.
+
+La función verifica si la columna especificada para el tipo de cáncer se encuentra en el conjunto de datos y si el tipo de cáncer especificado se encuentra en los valores únicos de esa columna. Si alguna de estas condiciones no se cumple, la función generará un error con un mensaje apropiado.
+
+Ejemplo de uso:
+
+Generar un gráfico de densidad para un solo tipo de cáncer
+```{r, warning=FALSE}
+plotdensity_cancer(expr, "dataset", "BRCA")
+```
+
+Generar un gráfico de densidad para todos los tipos de cáncer disponibles en el conjunto de datos
+```{r, warning=FALSE}
+plotdensity_cancer(expr, "dataset", "all")
+```
+
+
+### Función 4: ```plot_pca```
+
+```{r}
+plot_pca <- function(data) {
+  library(FactoMineR)
+  library(factoextra)
+  library(dplyr)
+  
+  # Seleccionamos solo las variables cuantitativas
+  expr_num <- select_if(data, is.numeric)
+  
+  if (ncol(expr_num) == 0) {
+    stop("Error: Los datos no contienen ninguna variable cuantitativa.")
+  }
+  
+  # Realizamos el análisis de componentes principales
+  res.pca <- PCA(expr_num, graph = FALSE)
+  
+  # Grafico de individuos
+  fviz_pca_ind(res.pca, geom.ind = "point", pointshape = 21, 
+               pointsize = 2, 
+               fill.ind = data$dataset, 
+               col.ind = "black", 
+               palette = "jco", 
+               addEllipses = TRUE,
+               label = "var",
+               col.var = "black",
+               repel = TRUE,
+               legend.title = "Cohort") +
+    ggtitle("2D PCA-plot from expr cohort") +
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme_grey()
+}
+```
+
+La función `plot_pca` toma como entrada un conjunto de datos y realiza un análisis de componentes principales (PCA) . Primero, se selecciona solo las variables cuantitativas del conjunto de datos y se verifica si hay alguna. Si no hay ninguna variable cuantitativa, la función se detiene con un mensaje de error. Luego, realiza el análisis  de componentes principales (PCA) y genera un gráfico de individuos utilizando la función `fviz_pca_ind` de la librería `factoextra`. El gráfico muestra los individuos como puntos y los colorea según el valor de la variable `dataset` en el conjunto de datos original. También agrega elipses y etiquetas para las variables, finalmente, se agrega un título al gráfico.
+
+
+```{r, warning=FALSE}
+plot_pca(expr)
+```
+
+
+### Función 5: ```anova_tukey_tests```
+
+```{r}
+anova_tukey_tests <- function(data, analysis_choice) {
+  # Cargamos los paquetes necesarios
+  library(carData)
+  library(car)
+  library(multcomp)
+  
+  if (analysis_choice == 1) {
+    # ANOVA
+    # Realizamos la prueba ANOVA para cada gen
+    for (gen in colnames(data)[-c(1,2)]) {
+      formula <- as.formula(paste(gen, "~ dataset"))
+      anova_result <- Anova(aov(formula, data = data))
+      print(anova_result)
+    }
+  } else if (analysis_choice == 2) {
+    # Prueba Tukey
+    data$dataset <- factor(data$dataset)
+    
+    # Realizamos la prueba de Tukey para cada gen
+    for (gen in colnames(data)[-c(1,2)]) {
+      formula <- as.formula(paste(gen, "~ dataset"))
+      tukey_result <- glht(aov(formula, data = data), linfct = mcp(dataset = "Tukey"))
+      print(summary(tukey_result))
+    }
+  } else {
+    stop("Error: Opción no válida. Ingrese 1 para realizar el Test ANOVA o 2 para el Test Tukey.")
+  }
+}
+```
+
+La función ```anova_tukey_tests```  permite realizar pruebas ANOVA y Tukey en los datos. Esta función toma un conjunto de datos como argumento y te permite especificar qué análisis deseas realizar.
+
+Cuando se ejecuta esta función, se  pedirá que se ingrese ```1``` para realizar el Test ANOVA o ```2``` para el Test Tukey. Una vez que se haya ingresado la elección, la función realizará el análisis correspondiente y mostrará los resultados en la consola.
+
+Ejemplo de uso:
+Realizar el Test ANOVA
+```{r}
+anova_tukey_tests(expr, 1)
+```
+
+Realizar el Test ANOVA
+```{r}
+anova_tukey_tests(expr, 2)
+```
