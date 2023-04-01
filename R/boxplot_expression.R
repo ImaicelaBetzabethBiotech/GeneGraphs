@@ -9,7 +9,7 @@
 #' @param x_var una variable para el eje x (x_var), dataset de la data, para el caso "tipos de cancer"
 #' @param y_var una variable para el eje y (y_var), nombre de Gen
 #'
-#' @return
+#' @return  un boxplot de la expresion de genes en diferentes tipos de cancer
 #' @export
 #'
 #' @examples
