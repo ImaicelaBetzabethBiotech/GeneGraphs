@@ -1,3 +1,17 @@
+#' plot_pca
+#'
+#'Esta función toma un conjunto de datos con
+#'variables cuantitativas y genera un gráfico PCA de dos dimensiones.
+#'
+#' @param data Conjunto de datos a utilizar para generar el gráfico
+#'
+#' @return El gráfico PCA de dos dimensiones.
+#' @export
+#'
+#' @examples
+#' expr <- data a utilizar
+#' plot_pca(expr)
+#'
 plot_pca <- function(data) {
   library(FactoMineR)
   library(factoextra)

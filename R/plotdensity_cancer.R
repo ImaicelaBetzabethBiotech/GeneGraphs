@@ -1,3 +1,21 @@
+#' plotdensity_cancer
+#'
+#'Esta función genera un gráfico de densidad para visualizar la distribución de los valores de expresión génica para un tipo de cáncer específico
+#'o para todos los tipos de cáncer disponibles en el conjunto de datos.
+#' @param data un objeto data.frame que contiene la expresión data
+#' @param dataset_col una cadena que indica el nombre de la columna que contiene la información del conjunto de datos
+#' @param cancer_type una cadena que indica el tipo de cáncer a trazar o “all” para trazar todos los tipos de cáncer
+#'
+#' @return un gráfico de densidad para los datos de expresión del tipo de cáncer especificado
+#' @export
+#'
+#' @examples
+#'
+#' expr <- data a utilizar
+#' "dataset" <- Tipos de cancer
+#' XBP1 = Gen
+#' plotdensity_cancer(expr, "dataset",  "BRCA") Genera un gráfico de caja para un solo gen
+#' plotdensity_cancer(expr, "dataset", "all") Genera un gráfico de caja para todos los genes disponibles en el conjunto de datos
 plotdensity_cancer <- function(data, dataset_col, cancer_type) {
   library(ggplot2)
   library(reshape2)

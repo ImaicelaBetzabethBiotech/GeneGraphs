@@ -1,3 +1,24 @@
+#' boxplot_expression
+#'
+#' Esta función genera un gráfico de caja para visualizar la distribución de
+#' los valores de las variables del eje y para cada valor de la variable del eje x.
+#' Si se especifica el valor "all" para el argumento y_var, la función incluirá todas las columnas
+#' del conjunto de datos que no sean la variable del eje x ni la columna "bcr_patient_barcode".
+#'
+#' @param data Conjunto de datos a utilizar para generar el gráfico
+#' @param x_var una variable para el eje x (x_var), dataset de la data, para el caso "tipos de cancer"
+#' @param y_var una variable para el eje y (y_var), nombre de Gen
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'  expr <- data a utilizar
+#' "dataset" <- Tipos de cancer
+#' XBP1 = Gen
+#' boxplot_expression(expr, "dataset", "XBP1") Genera un gráfico de caja para un solo gen
+#' boxplot_expression(expr, "dataset", "all") Genera un gráfico de caja para todos los genes disponibles en el conjunto de datos
+#'
 boxplot_expression <- function(data, x_var, y_var) {
   library(ggpubr)
   if (!x_var %in% colnames(data)) {

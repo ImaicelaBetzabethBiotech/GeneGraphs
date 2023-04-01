@@ -1,3 +1,18 @@
+#' anova_tukey_tests
+#'
+#' Esta funciòn permite realizar pruebas ANOVA y Tukey en los datos,
+#'toma un conjunto de datos como argumento y  permite especificar qué análisis deseas realizar.
+#'
+#' @param data Conjunto de datos a utilizar
+#'
+#'
+#' @return una tabla con el analisis de las pruebas ANOVA y/o Tukey en los datos
+#' @export
+#'
+#' @examples
+#'  expr <- data a utilizar
+#' anova_tukey_tests(expr, 1) Para realizar el Test ANOVA
+#' anova_tukey_tests(expr, 2) para realizar el Test Tukey
 anova_tukey_tests <- function(data) {
   # Cargamos los paquetes necesarios
   library(carData)
